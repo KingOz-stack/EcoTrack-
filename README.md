@@ -12,9 +12,12 @@ _Educational Tips:_ Offers suggestions for reducing carbon footprint.
 _Responsive Design:_ Adaptable for mobile and desktop users.
 
 **Technologies Used**
-_HTML:_ Structure and content
-_CSS:_ Styling and layout
-_JavaScript:_ Interactivity and calculations
+
+_**HTML:**_ Structure and content
+
+_**CSS:**_ Styling and layout
+
+_**JavaScript:**_ Interactivity and calculations
 
 
 
