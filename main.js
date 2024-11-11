@@ -1,5 +1,5 @@
 // Replace with your actual API key
-const API_KEY = '7KB78RCAPX5GS69V1XQFJ54F28'; 
+const API_KEY = 'API_KEY'; 
 
 const state = {
     milesDriven: null,
