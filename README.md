@@ -1,5 +1,6 @@
 # Carbon-Footprint-Calculator
 **EcoTrack**
+
 This project is a Carbon Footprint Calculator designed to help users estimate the environmental impact of their daily activities. The calculator takes input from users, such as travel habits, energy consumption, and dietary choices, to calculate their carbon footprint and provide feedback on reducing their impact.
 
 
