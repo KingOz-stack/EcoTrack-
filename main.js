@@ -1,5 +1,5 @@
 // Replace with your actual API key
-const API_KEY = 'API_KEY'; 
+const API_KEY = 'API-KEY'; 
 
 const state = {
     milesDriven: null,
@@ -117,7 +117,7 @@ function askDiet() {
 async function fetchCarbonData() {
     try {
         // Assuming a placeholder URL for the API endpoint (you should replace it with the actual API endpoint)
-        const apiUrl = `https://climatiq.io/?=${state.milesDriven}&energy=${state.energyUsed}&diet=${state.diet}&key=${API_KEY}`;
+        const apiUrl = `https://api.climatiq.io/data/v1/estimate=${state.milesDriven}&energy=${state.energyUsed}&diet=${state.diet}&key=${API_KEY}`;
 
         const response = await fetch(apiUrl);
         const data = await response.json();
