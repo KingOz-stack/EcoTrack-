@@ -116,7 +116,7 @@ function askDiet() {
 // Function to fetch carbon footprint data from an API
 async function fetchCarbonData() {
     try {
-        // Assuming a placeholder URL for the API endpoint (you should replace it with the actual API endpoint)
+        
         const apiUrl = `https://api.climatiq.io/data/v1/estimate=${state.milesDriven}&energy=${state.energyUsed}&diet=${state.diet}&key=${API_KEY}`;
 
         const response = await fetch(apiUrl);
