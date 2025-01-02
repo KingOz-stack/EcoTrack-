@@ -1,140 +1,163 @@
-// Replace with your actual API key
-const API_KEY = 'XXXXXXXXX'; 
-
-const state = {
-    milesDriven: null,
-    energyUsed: null,
-    diet: null,
-    step: 0, // Keeps track of the step in the conversation
+// Define transportEmissions globally
+const transportEmissions = {
+    car: 0.2,
+    bus: 0.1,
+    train: 0.05,
+    bike: 0
 };
 
-document.getElementById('send-btn').addEventListener('click', function () {
-    const userInput = document.getElementById('user-input').value.trim();
-    if (userInput !== "") {
-        addMessage(userInput, 'user');
-        processUserInput(userInput);
-        document.getElementById('user-input').value = "";
-    }
-});
-
-document.getElementById('user-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        document.getElementById('send-btn').click();
-    }
-});
-
-// Function to add messages to the chat
-function addMessage(message, sender) {
-    const chatBox = document.getElementById('chat-box');
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('chat-message', sender);
-    messageDiv.textContent = message;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the latest message
-}
-
-// Function to process the user's input and calculate carbon footprint
-function processUserInput(input) {
-    const chatBox = document.getElementById('chat-box');
-    input = input.toLowerCase();
-
-    switch (state.step) {
-        case 0: // Starting the interaction
-            if (input.includes('carbon footprint') || input.includes('calculate')) {
-                addMessage("Sure! Let's calculate your carbon footprint. Please answer a few questions.", 'chatbot');
-                state.step = 1;
-                askMilesDriven();
-            } else {
-                addMessage("Sorry, I didn't understand that. Try asking about your carbon footprint.", 'chatbot');
-            }
-            break;
-
-        case 1: // Asking about miles driven
-            let miles = parseInt(input);
-            if (isNaN(miles) || miles <= 0) {
-                addMessage("Please provide a valid number for miles driven per week.", 'chatbot');
-                break;
-            }
-            state.milesDriven = miles;
-            addMessage(`Got it! You drive ${miles} miles per week.`, 'chatbot');
-            state.step = 2;
-            askEnergyUsage();
-            break;
-
-        case 2: // Asking about home energy usage
-            let energy = parseInt(input);
-            if (isNaN(energy) || energy <= 0) {
-                addMessage("Please provide a valid number for your monthly energy usage in kWh.", 'chatbot');
-                break;
-            }
-            state.energyUsed = energy;
-            addMessage(`Got it! You use ${energy} kWh of electricity each month.`, 'chatbot');
-            state.step = 3;
-            askDiet();
-            break;
-
-        case 3: // Asking about diet
-            if (input.includes("vegetarian")) {
-                state.diet = "vegetarian";
-                addMessage("Thanks! We'll consider your diet as vegetarian.", 'chatbot');
-            } else if (input.includes("meat")) {
-                state.diet = "meat";
-                addMessage("Thanks! We'll consider your diet as meat-heavy.", 'chatbot');
-            } else {
-                addMessage("I didn't quite catch that. Are you vegetarian or do you eat meat?", 'chatbot');
-                return;
-            }
-            state.step = 4;
-            fetchCarbonData();
-            break;
-
-        default:
-            addMessage("Sorry, something went wrong. Please try again.", 'chatbot');
-            break;
-    }
-}
-
-// Function to ask questions for carbon footprint calculation
-function askMilesDriven() {
-    setTimeout(() => {
-        addMessage("How many miles do you drive per week?", 'chatbot');
-    }, 1000);
-}
-
-function askEnergyUsage() {
-    setTimeout(() => {
-        addMessage("How many kilowatt-hours (kWh) of electricity do you use per month?", 'chatbot');
-    }, 1000);
-}
-
-function askDiet() {
-    setTimeout(() => {
-        addMessage("What is your diet like? Are you vegetarian or do you eat meat?", 'chatbot');
-    }, 1000);
-}
-
-// Function to fetch carbon footprint data from an API
-async function fetchCarbonData() {
-    try {
+document.addEventListener('DOMContentLoaded', function() {
+    const footprintForm = document.getElementById('footprint-form');
+    
+    footprintForm.addEventListener('submit', function(event) {
+        // Prevent the form from submitting and refreshing the page
+        event.preventDefault();
         
-        const apiUrl = `https://api.climatiq.io/data/v1/estimate=${state.milesDriven}&energy=${state.energyUsed}&diet=${state.diet}&key=${API_KEY}`;
+        // Get all the input values
+        const commuteDistance = parseFloat(document.getElementById('commute-input').value);
+        const transportMethod = document.getElementById('transport-input').value;
+        const electricUsage = parseFloat(document.getElementById('electric-input').value);
+        const gasUsage = parseFloat(document.getElementById('gas-input').value);
+        const meatConsumption = parseFloat(document.getElementById('meat-input').value);
+        const flights = parseFloat(document.getElementById('flight-input').value);
+        
+        // Calculate footprint (add your calculation logic here)
+        const footprint = calculateFootprint(commuteDistance, transportMethod, electricUsage, gasUsage, meatConsumption, flights);
+        
+        // Show results
+        displayResults(footprint);
+    });
+});
 
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+function calculateFootprint(commute, transport, electric, gas, meat, flights) {
+    // Add your calculation logic here
+    // This is a simplified example
+    let total = 0;
+    
+    // Transport calculations (now using global transportEmissions)
+    total += commute * transportEmissions[transport] * 365;
+    
+    // Energy calculations
+    total += electric * 0.5; // kWh to CO2
+    total += gas * 2.3;      // m³ to CO2
+    
+    // Lifestyle calculations
+    total += meat * 3.3 * 52;    // Weekly meat consumption to yearly
+    total += flights * 200;      // Average flight emissions
+    
+    return total;
+}
 
-        if (data.success) {
-            // Assuming the API returns data like this
-            const { carbonFromDriving, carbonFromEnergy, carbonFromDiet, totalCarbonFootprint } = data;
+function displayResults(footprint) {
+    const resultsDiv = document.getElementById('results-output');
+    resultsDiv.classList.remove('hidden');
+    
+    // Calculate individual emissions using the global transportEmissions object
+    const transport = document.getElementById('transport-input').value;
+    const commuteEmissions = parseFloat(document.getElementById('commute-input').value) * 
+        (transportEmissions[transport] * 365);
+    const electricEmissions = parseFloat(document.getElementById('electric-input').value) * 0.5;
+    const gasEmissions = parseFloat(document.getElementById('gas-input').value) * 2.3;
+    const meatEmissions = parseFloat(document.getElementById('meat-input').value) * 3.3 * 52;
+    const flightEmissions = parseFloat(document.getElementById('flight-input').value) * 200;
 
-            addMessage(`Your estimated carbon footprint is:`, 'chatbot');
-            addMessage(`- From driving: ${carbonFromDriving} kg CO2/week`, 'chatbot');
-            addMessage(`- From home energy: ${carbonFromEnergy} kg CO2/day`, 'chatbot');
-            addMessage(`- From your diet: ${carbonFromDiet} kg CO2/year`, 'chatbot');
-            addMessage(`Total estimated carbon footprint: ${totalCarbonFootprint} kg CO2`, 'chatbot');
-        } else {
-            addMessage("Sorry, I couldn't calculate your carbon footprint. Please try again later.", 'chatbot');
-        }
-    } catch (error) {
-        addMessage("There was an error with the API request. Please try again.", 'chatbot');
+    // Create container for charts
+    resultsDiv.innerHTML = `
+        <h2>Your Carbon Footprint Results</h2>
+        <div class="charts-container" style="display: flex; justify-content: space-between;">
+            <div style="width: 45%;">
+                <canvas id="footprint-pie-chart"></canvas>
+            </div>
+            <div style="width: 45%;">
+                <canvas id="footprint-bar-chart"></canvas>
+            </div>
+        </div>
+        <div id="recommendations-output"></div>
+    `;
+
+    // Create pie chart
+    const ctxPie = document.getElementById('footprint-pie-chart').getContext('2d');
+    if (window.footprintPieChart) {
+        window.footprintPieChart.destroy();
     }
+    
+    window.footprintPieChart = new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: ['Your Footprint', 'Average Footprint'],
+            datasets: [{
+                data: [footprint, 5000],
+                backgroundColor: ['#36A2EB', '#FF6384']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Your Footprint vs Average'
+                }
+            }
+        }
+    });
+
+    // Create bar chart
+    const ctxBar = document.getElementById('footprint-bar-chart').getContext('2d');
+    if (window.footprintBarChart) {
+        window.footprintBarChart.destroy();
+    }
+
+    window.footprintBarChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: ['Transport', 'Electricity', 'Gas', 'Meat', 'Flights'],
+            datasets: [{
+                label: 'Emissions (kg CO2e)',
+                data: [
+                    commuteEmissions,
+                    electricEmissions,
+                    gasEmissions,
+                    meatEmissions,
+                    flightEmissions
+                ],
+                backgroundColor: [
+                    '#FF9F40',
+                    '#36A2EB',
+                    '#FF6384',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Breakdown by Category'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'kg CO2e per year'
+                    }
+                }
+            }
+        }
+    });
+
+    // Add recommendations
+    const recommendationsDiv = document.getElementById('recommendations-output');
+    recommendationsDiv.innerHTML = `
+        <h3>Your carbon footprint is ${footprint.toFixed(2)} kg CO2e per year</h3>
+        <p>Here are some recommendations to reduce your footprint:</p>
+        <ul>
+            <li>Consider using more public transportation</li>
+            <li>Reduce meat consumption</li>
+            <li>Improve home energy efficiency</li>
+        </ul>
+    `;
 }
