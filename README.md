@@ -1,5 +1,3 @@
-
-```markdown
 # EcoTrack🌍
 
 The **EcoTrack** is a simple web application designed to help users calculate their annual carbon footprint based on their transportation habits, dietary preferences, and recycling behavior. It provides actionable recommendations to minimize their environmental impact and visualizes their carbon emissions using customizable charts.
