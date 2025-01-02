@@ -34,7 +34,7 @@
                     <input type="number" id="electric-input" min="0" required>
                 </label>
                 <label>
-                    Monthly gas usage (kg):
+                    Monthly gas usage (m³):
                     <input type="number" id="gas-input" min="0" required>
                 </label>
             </div>
@@ -51,12 +51,38 @@
                 </label>
             </div>
 
+            <div class="form-section">
+                <h2>Location</h2>
+                <label>
+                    Your Country:
+                    <select id="country-input">
+                        <option value="global">Global Average</option>
+                        <option value="us">United States</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="canada">Canada</option>
+                        <option value="australia">Australia</option>
+                        <option value="germany">Germany</option>
+                        <option value="france">France</option>
+                        <option value="china">China</option>
+                        <option value="india">India</option>
+                        <option value="japan">Japan</option>
+                    </select>
+                </label>
+            </div>
+
             <button type="submit">Calculate Footprint</button>
         </form>
 
         <div id="results-output" class="hidden">
             <h2>Your Carbon Footprint Results</h2>
-            <canvas id="footprint-chart"></canvas>
+            <div class="charts-container" style="display: flex; justify-content: space-between;">
+                <div style="width: 45%;">
+                    <canvas id="footprint-pie-chart"></canvas>
+                </div>
+                <div style="width: 45%;">
+                    <canvas id="footprint-bar-chart"></canvas>
+                </div>
+            </div>
             <div id="recommendations-output"></div>
         </div>
     </div>
