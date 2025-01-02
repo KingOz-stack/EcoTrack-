@@ -3,18 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carbon Footprint Calculator Chatbot</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Carbon Footprint Calculator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-box" id="chat-box">
-            <!-- Chat messages will appear here -->
-        </div>
-        <input type="text" id="user-input" placeholder="Ask me about your carbon footprint" autofocus>
-        <button id="send-btn">Send</button>
-    </div>
+    <div class="container">
+        
+        <form id="footprint-form">
+            <div class="form-section">
+                <h2>Transportation</h2>
+                <label>
+                    Daily commute distance (km):
+                    <input type="number" id="commute-input" min="0" required>
+                </label>
+                <label>
+                    Transportation method:
+                    <select id="transport-input">
+                        <option value="car">Car</option>
+                        <option value="bus">Bus</option>
+                        <option value="train">Train</option>
+                        <option value="bike">Bicycle</option>
+                    </select>
+                </label>
+            </div>
 
+            <div class="form-section">
+                <h2>Home Energy</h2>
+                <label>
+                    Monthly electricity usage (kWh):
+                    <input type="number" id="electric-input" min="0" required>
+                </label>
+                <label>
+                    Monthly gas usage (kg):
+                    <input type="number" id="gas-input" min="0" required>
+                </label>
+            </div>
+
+            <div class="form-section">
+                <h2>Lifestyle</h2>
+                <label>
+                    Meat consumption per week (servings):
+                    <input type="number" id="meat-input" min="0" required>
+                </label>
+                <label>
+                    Monthly flights:
+                    <input type="number" id="flight-input" min="0" required>
+                </label>
+            </div>
+
+            <button type="submit">Calculate Footprint</button>
+        </form>
+
+        <div id="results-output" class="hidden">
+            <h2>Your Carbon Footprint Results</h2>
+            <canvas id="footprint-chart"></canvas>
+            <div id="recommendations-output"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
