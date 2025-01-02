@@ -6,26 +6,49 @@ const transportEmissions = {
     bike: 0
 };
 
+// Add country averages (in kg CO2e per year)
+const countryAverages = {
+    'global': 4000,
+    'us': 16000,
+    'uk': 10000,
+    'canada': 15500,
+    'australia': 17000,
+    'germany': 9700,
+    'france': 5100,
+    'china': 7200,
+    'india': 1900,
+    'japan': 9000
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const footprintForm = document.getElementById('footprint-form');
+    const submitButton = footprintForm.querySelector('button[type="submit"]');
     
-    footprintForm.addEventListener('submit', function(event) {
-        // Prevent the form from submitting and refreshing the page
+    submitButton.addEventListener('click', function(event) {
         event.preventDefault();
         
         // Get all the input values
-        const commuteDistance = parseFloat(document.getElementById('commute-input').value);
+        const commuteDistance = parseFloat(document.getElementById('commute-input').value) || 0;
         const transportMethod = document.getElementById('transport-input').value;
-        const electricUsage = parseFloat(document.getElementById('electric-input').value);
-        const gasUsage = parseFloat(document.getElementById('gas-input').value);
-        const meatConsumption = parseFloat(document.getElementById('meat-input').value);
-        const flights = parseFloat(document.getElementById('flight-input').value);
+        const electricUsage = parseFloat(document.getElementById('electric-input').value) || 0;
+        const gasUsage = parseFloat(document.getElementById('gas-input').value) || 0;
+        const meatConsumption = parseFloat(document.getElementById('meat-input').value) || 0;
+        const flights = parseFloat(document.getElementById('flight-input').value) || 0;
         
-        // Calculate footprint (add your calculation logic here)
+        console.log('Calculating footprint with values:', {
+            commuteDistance,
+            transportMethod,
+            electricUsage,
+            gasUsage,
+            meatConsumption,
+            flights
+        });
+        
         const footprint = calculateFootprint(commuteDistance, transportMethod, electricUsage, gasUsage, meatConsumption, flights);
+        console.log('Calculated footprint:', footprint);
         
-        // Show results
         displayResults(footprint);
+        return false;
     });
 });
 
@@ -52,7 +75,11 @@ function displayResults(footprint) {
     const resultsDiv = document.getElementById('results-output');
     resultsDiv.classList.remove('hidden');
     
-    // Calculate individual emissions using the global transportEmissions object
+    // Get selected country's average
+    const selectedCountry = document.getElementById('country-input').value;
+    const countryAverage = countryAverages[selectedCountry];
+    
+    // Calculate individual emissions
     const transport = document.getElementById('transport-input').value;
     const commuteEmissions = parseFloat(document.getElementById('commute-input').value) * 
         (transportEmissions[transport] * 365);
@@ -75,7 +102,7 @@ function displayResults(footprint) {
         <div id="recommendations-output"></div>
     `;
 
-    // Create pie chart
+    // Create pie chart with country comparison
     const ctxPie = document.getElementById('footprint-pie-chart').getContext('2d');
     if (window.footprintPieChart) {
         window.footprintPieChart.destroy();
@@ -84,9 +111,9 @@ function displayResults(footprint) {
     window.footprintPieChart = new Chart(ctxPie, {
         type: 'pie',
         data: {
-            labels: ['Your Footprint', 'Average Footprint'],
+            labels: ['Your Footprint', `${selectedCountry.toUpperCase()} Average`],
             datasets: [{
-                data: [footprint, 5000],
+                data: [footprint, countryAverage],
                 backgroundColor: ['#36A2EB', '#FF6384']
             }]
         },
@@ -95,7 +122,7 @@ function displayResults(footprint) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Your Footprint vs Average'
+                    text: 'Your Footprint vs Country Average'
                 }
             }
         }
@@ -149,15 +176,21 @@ function displayResults(footprint) {
         }
     });
 
-    // Add recommendations
+    // Update recommendations based on comparison
     const recommendationsDiv = document.getElementById('recommendations-output');
+    const comparisonText = footprint > countryAverage 
+        ? `Your footprint is ${((footprint/countryAverage - 1) * 100).toFixed(1)}% higher than the ${selectedCountry.toUpperCase()} average.`
+        : `Your footprint is ${((1 - footprint/countryAverage) * 100).toFixed(1)}% lower than the ${selectedCountry.toUpperCase()} average.`;
+
     recommendationsDiv.innerHTML = `
         <h3>Your carbon footprint is ${footprint.toFixed(2)} kg CO2e per year</h3>
+        <p>${comparisonText}</p>
         <p>Here are some recommendations to reduce your footprint:</p>
         <ul>
             <li>Consider using more public transportation</li>
             <li>Reduce meat consumption</li>
             <li>Improve home energy efficiency</li>
+            ${footprint > countryAverage ? `<li>Look for ways to bring your emissions closer to the national average</li>` : ''}
         </ul>
     `;
 }
