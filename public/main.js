@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             flights
         });
         
-        calculateFootprint(commuteDistance, transportMethod, electricUsage, gasUsage, meatConsumption, flights)
+        calculateFootprint(event)
             .then(footprint => {
                 console.log('Calculated footprint:', footprint);
                 displayResults(footprint);
@@ -57,40 +57,46 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function calculateFootprint(commute, transport, electric, gas, meat, flights) {
-    try {
-        console.log('Sending data to backend:', {
-            commute, transport, electric, gas, meat, flights,
-            country: document.getElementById('country-input').value
-        });
+async function calculateFootprint(event) {
+    event.preventDefault();
+    
+    const formData = {
+        commute: parseFloat(document.getElementById('commute').value) || 0,
+        transport: document.getElementById('transport').value,
+        electric: parseFloat(document.getElementById('electric').value) || 0,
+        gas: parseFloat(document.getElementById('gas').value) || 0,
+        meat: parseFloat(document.getElementById('meat').value) || 0,
+        flights: parseFloat(document.getElementById('flights').value) || 0,
+        country: document.getElementById('country').value
+    };
 
-        const response = await fetch('http://localhost:3000/api/calculate-emissions', {
+    try {
+        const response = await fetch('/api/calculate-emissions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                commute,
-                transport,
-                electric,
-                gas,
-                meat,
-                flights,
-                country: document.getElementById('country-input').value
-            })
+            body: JSON.stringify(formData)
         });
 
-        console.log('Received response from backend');
-        const data = await response.json();
-        if (data.error) {
-            console.error('Backend returned error:', data.error);
-            throw new Error(data.error);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        console.log('Calculated total:', data.total);
-        return data.total;
+
+        const data = await response.json();
+        console.log('Response:', data); // Add this for debugging
+        
+        if (data.total) {
+            document.getElementById('result').textContent = 
+                `Your annual carbon footprint is approximately ${data.total.toFixed(2)} kg CO2e`;
+        } else {
+            document.getElementById('result').textContent = 
+                'Error calculating carbon footprint';
+        }
     } catch (error) {
-        console.error('Error calculating footprint:', error);
-        throw error;
+        console.error('Error:', error);
+        document.getElementById('result').textContent = 
+            'Error calculating carbon footprint';
     }
 }
 

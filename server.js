@@ -19,10 +19,14 @@ app.use(express.static('public'));
 
 app.post('/api/calculate-emissions', async (req, res) => {
     try {
+        console.log('Received request:', req.body);
         const { commute, transport, electric, gas, meat, flights, country } = req.body;
-        console.log('Calculating emissions for:', { commute, transport, electric, gas, meat, flights, country });
-        
         let total = 0;
+
+        // Add logging for debugging
+        console.log('Processing request with values:', {
+            commute, transport, electric, gas, meat, flights, country
+        });
 
         // Calculate transport emissions (daily commute → yearly)
         if (commute > 0 && transport !== 'bike') {
@@ -122,12 +126,25 @@ app.post('/api/calculate-emissions', async (req, res) => {
             total += yearlyMeat * 3.3; // 3.3 kg CO2 per kg of meat
         }
 
-        console.log('Total emissions calculated:', total);
+        console.log('Calculated total:', total);
         res.json({ total });
     } catch (error) {
-        console.error('Server error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Error calculating emissions' });
+        console.error('Server error:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        res.status(500).json({ 
+            error: 'Error calculating emissions',
+            details: error.message 
+        });
     }
+});
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global error:', err);
+    res.status(500).json({ 
+        error: 'Server error', 
+        details: err.message 
+    });
 });
 
 app.listen(port, () => {
