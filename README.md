@@ -107,17 +107,39 @@ eco-track/
 
 ---
 
-## Future Enhancements
+## Usage
+1. Enter your daily commute distance and mode of transport
+2. Input monthly electricity consumption
+3. Specify natural gas usage
+4. Enter weekly meat consumption
+5. Add number of monthly flights
+6. Select your country
+7. Click "Calculate" to see your annual carbon footprint
 
-- Add support for additional lifestyle factors like energy usage.
-- Include a database to store user input and track long-term progress.
-- Enable social sharing of carbon footprint results.
+## API Reference
+The application uses the Carbon Interface API for emissions calculations. Key endpoints:
+- `/estimates` - Calculate emissions for various activities
+- Vehicle emissions
+- Electricity usage
+- Flight emissions
 
----
+## Contributing
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/improvement`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/improvement`)
+5. Create a Pull Request
 
 ## License
+This project is licensed under the MIT License - see the LICENSE.md file for details
 
-This project is licensed under the [MIT License](LICENSE).
-```
+## Acknowledgments
+- Carbon Interface API for providing emissions data
 
-Copy and paste this content into a file named `README.md` in your project directory. It’s ready to use!
+## Future Improvements
+- Add more transportation options
+- Include renewable energy options
+- Implement user accounts for tracking progress
+- Add visualization of carbon footprint data
+- Include tips for reducing carbon footprint
+- Add comparison with average footprints by country
