@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function calculateFootprint(event) {
     event.preventDefault();
+    console.log('Form submitted'); // Debug log
     
     const formData = {
         commute: parseFloat(document.getElementById('commute').value) || 0,
@@ -70,7 +71,10 @@ async function calculateFootprint(event) {
         country: document.getElementById('country').value
     };
 
+    console.log('Form data:', formData); // Debug log
+
     try {
+        console.log('Sending request to API...'); // Debug log
         const response = await fetch('/api/calculate-emissions', {
             method: 'POST',
             headers: {
@@ -79,12 +83,16 @@ async function calculateFootprint(event) {
             body: JSON.stringify(formData)
         });
 
+        console.log('Response status:', response.status); // Debug log
+
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API Error:', errorText); // Debug log
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Response:', data); // Add this for debugging
+        console.log('API Response:', data); // Debug log
         
         if (data.total) {
             document.getElementById('result').textContent = 
@@ -94,7 +102,7 @@ async function calculateFootprint(event) {
                 'Error calculating carbon footprint';
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error details:', error); // Debug log
         document.getElementById('result').textContent = 
             'Error calculating carbon footprint';
     }
