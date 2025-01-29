@@ -8,6 +8,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 const BASE_URL = 'https://www.carboninterface.com/api/v1';
+const apiKey = process.env.CARBON_INTERFACE_API_KEY;
 
 app.use(cors());
 app.use(express.json());
@@ -150,6 +151,26 @@ app.post('/api/calculate-emissions', async (req, res) => {
         console.error('Server error:', error.response?.data || error.message);
         res.status(500).json({ error: 'Error calculating emissions' });
     }
+});
+
+app.get('/api/test', (req, res) => {
+    if (!apiKey) {
+        return res.status(500).json({ error: 'API key is missing' });
+    }
+
+    // Example API call using the key
+    axios.get(`${BASE_URL}/data`, { 
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        }
+    })
+    .then(response => {
+        res.json(response.data);
+    })
+    .catch(error => {
+        console.error('API call error:', error);
+        res.status(500).json({ error: 'Failed to fetch data' });
+    });
 });
 
 app.listen(port, () => {
