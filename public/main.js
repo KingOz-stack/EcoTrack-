@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.addEventListener('click', function(event) {
         event.preventDefault();
         
-        // Collect input values
+        // Get all the input values
         const commuteDistance = parseFloat(document.getElementById('commute-input').value) || 0;
         const transportMethod = document.getElementById('transport-input').value;
         const electricUsage = parseFloat(document.getElementById('electric-input').value) || 0;
@@ -86,7 +86,15 @@ async function calculateFootprint(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                commute: commuteDistance,
+                transport: transportMethod,
+                electric: electricUsage,
+                gas: gasUsage,
+                meat: meatConsumption,
+                flights: flights,
+                country: document.getElementById('country-input').value
+            })
         });
 
         console.log('Response status:', response.status); // Debug log
@@ -112,6 +120,12 @@ async function calculateFootprint(event) {
         document.getElementById('result').textContent = 
             'Error calculating carbon footprint';
     }
+}
+
+function sanitizeHTML(str) {
+    var temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
 }
 
 function displayResults(footprint) {
