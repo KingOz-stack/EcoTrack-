@@ -23,6 +23,7 @@ const countryAverages = {
 document.addEventListener('DOMContentLoaded', function() {
     const footprintForm = document.getElementById('footprint-form');
     const submitButton = footprintForm.querySelector('button[type="submit"]');
+    const resultsDiv = document.getElementById('results-output');
     
     submitButton.addEventListener('click', function(event) {
         event.preventDefault();
@@ -34,6 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const gasUsage = parseFloat(document.getElementById('gas-input').value) || 0;
         const meatConsumption = parseFloat(document.getElementById('meat-input').value) || 0;
         const flights = parseFloat(document.getElementById('flight-input').value) || 0;
+        
+        // Show loading state
+        resultsDiv.innerHTML = '<p>Calculating...</p>';
+        resultsDiv.classList.remove('hidden');
         
         // API call to backend
         fetch('/api/calculate-emissions', {
@@ -70,6 +75,39 @@ document.addEventListener('DOMContentLoaded', function() {
             displayError(error);
         });
     });
+
+    // Function to display results
+    function displayResults(footprint) {
+        resultsDiv.classList.remove('hidden');
+        const selectedCountry = document.getElementById('country-input').value;
+        const countryAverage = countryAverages[selectedCountry.toLowerCase()] || countryAverages['global'];
+        
+        const formattedFootprint = parseFloat(footprint).toFixed(2);
+        const formattedAverage = parseFloat(countryAverage).toFixed(2);
+        const percentage = ((footprint - countryAverage) / countryAverage * 100).toFixed(1);
+        
+        let comparisonText = '';
+        if (footprint > countryAverage) {
+            comparisonText = `This is ${percentage}% higher than`;
+        } else {
+            comparisonText = `This is ${Math.abs(percentage)}% lower than`;
+        }
+        
+        resultsDiv.innerHTML = `
+            <h2>Your Carbon Footprint Results</h2>
+            <p>Your annual carbon footprint is <strong>${formattedFootprint}</strong> kg CO2e.</p>
+            <p>${comparisonText} the average in ${selectedCountry} (${formattedAverage} kg CO2e).</p>
+        `;
+    }
+
+    // Function to display errors
+    function displayError(error) {
+        resultsDiv.classList.remove('hidden');
+        resultsDiv.innerHTML = `
+            <h2>Error Calculating Footprint</h2>
+            <p>${error.message}</p>
+        `;
+    }
 });
 
 async function calculateFootprint(event) {
