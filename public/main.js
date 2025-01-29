@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.addEventListener('click', function(event) {
         event.preventDefault();
         
-        // Get all the input values
+        // Collect input values
         const commuteDistance = parseFloat(document.getElementById('commute-input').value) || 0;
         const transportMethod = document.getElementById('transport-input').value;
         const electricUsage = parseFloat(document.getElementById('electric-input').value) || 0;
@@ -35,25 +35,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const meatConsumption = parseFloat(document.getElementById('meat-input').value) || 0;
         const flights = parseFloat(document.getElementById('flight-input').value) || 0;
         
-        console.log('Calculating footprint with values:', {
-            commuteDistance,
-            transportMethod,
-            electricUsage,
-            gasUsage,
-            meatConsumption,
-            flights
-        });
-        
-        calculateFootprint(event)
-            .then(footprint => {
-                console.log('Calculated footprint:', footprint);
-                displayResults(footprint);
+        // API call to backend
+        fetch('/api/calculate-emissions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                commute: commuteDistance,
+                transport: transportMethod,
+                electric: electricUsage,
+                gas: gasUsage,
+                meat: meatConsumption,
+                flights: flights,
+                country: document.getElementById('country-input').value
             })
-            .catch(error => {
-                console.error('Error calculating footprint:', error);
-                displayError(error);
-            });
-        return false;
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Calculated footprint:', data.total);
+            displayResults(data.total);
+        })
+        .catch(error => {
+            console.error('Error calculating footprint:', error);
+            displayError(error);
+        });
     });
 });
 
@@ -106,12 +112,6 @@ async function calculateFootprint(event) {
         document.getElementById('result').textContent = 
             'Error calculating carbon footprint';
     }
-}
-
-function sanitizeHTML(str) {
-    var temp = document.createElement('div');
-    temp.textContent = str;
-    return temp.innerHTML;
 }
 
 function displayResults(footprint) {
@@ -247,3 +247,5 @@ function displayError(error) {
         <p>${error.message}</p>
     `;
 }
+
+
