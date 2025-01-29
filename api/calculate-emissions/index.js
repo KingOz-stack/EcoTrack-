@@ -27,6 +27,9 @@ module.exports = async (req, res) => {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
+        // Log the incoming request data
+        console.log('Received request body:', req.body);
+
         const { commute, transport, electric, gas, meat, flights, country } = req.body;
         let total = 0;
 
@@ -87,14 +90,14 @@ module.exports = async (req, res) => {
             );
         }
 
-        // 4. Natural gas emissions calculation
+        // 4. Cooking gas (LPG) emissions calculation
         if (gas > 0) {
             apiRequests.push(
                 axios.post(`${BASE_URL}/estimates`, {
                     type: "fuel_combustion",
-                    fuel_source_type: "ng",
-                    fuel_source_unit: "ft3",
-                    fuel_source_value: gas * 12
+                    fuel_source_type: "lpg", // Changed to LPG
+                    fuel_source_unit: "l",   // Changed to liters
+                    fuel_source_value: gas * 12 // Monthly to yearly
                 }, {
                     headers: {
                         'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
@@ -138,7 +141,8 @@ module.exports = async (req, res) => {
         return res.status(500).json({
             success: false,
             error: 'Error calculating emissions',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
