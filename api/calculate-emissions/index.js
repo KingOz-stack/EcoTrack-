@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
         // Calculate gas emissions
         if (gas > 0) {
             const yearlyGas = gas * 12;
-            total += yearlyGas * 2.3;
+            total += yearlyGas * 0.0551;
         }
 
         // Calculate meat emissions

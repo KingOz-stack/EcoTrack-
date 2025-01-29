@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Footprint Calculator</title>
     <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -33,10 +34,10 @@
                     Monthly electricity usage (kWh):
                     <input type="number" id="electric-input" min="0" required>
                 </label>
-                <label>
-                    Monthly gas usage (m³):
-                    <input type="number" id="gas-input" min="0" required>
-                </label>
+                <div class="input-group">
+                    <label for="gas-input">Monthly Natural Gas Usage (ft³):</label>
+                    <input type="number" id="gas-input" placeholder="Enter monthly gas usage in cubic feet" min="0">
+                </div>
             </div>
 
             <div class="form-section">
@@ -86,7 +87,6 @@
             <div id="recommendations-output"></div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/main.js"></script>
 </body>
 </html>

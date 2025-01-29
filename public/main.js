@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const footprintForm = document.getElementById('footprint-form');
     const submitButton = footprintForm.querySelector('button[type="submit"]');
     const resultsDiv = document.getElementById('results-output');
+    let pieChart = null;
+    let barChart = null;
     
     // Country averages data
     const countryAverages = {
@@ -128,54 +130,103 @@ document.addEventListener('DOMContentLoaded', function() {
             comparisonText = `This is ${Math.abs(percentage)}% lower than`;
         }
         
-        // Create the results HTML with visualizations and tips
-        let resultsHTML = `
+        // Create the results HTML with visualizations
+        resultsDiv.innerHTML = `
             <h2>Your Carbon Footprint Results</h2>
             <p>Your annual carbon footprint is <strong>${formattedFootprint}</strong> kg CO2e.</p>
             <p>${comparisonText} the average in ${selectedCountry} (${formattedAverage} kg CO2e).</p>
             
-            <div class="visualization">
-                <h3>Comparison Visualization</h3>
-                <div class="bar-chart">
-                    <div class="bar your-footprint" style="width: ${(footprint/20000)*100}%;">
-                        <span>Your Footprint: ${formattedFootprint}</span>
-                    </div>
-                    <div class="bar country-average" style="width: ${(countryAverage/20000)*100}%;">
-                        <span>Country Average: ${formattedAverage}</span>
-                    </div>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
                 </div>
             </div>
 
             <div class="recommendations">
                 <h3>Recommended Actions to Reduce Your Footprint</h3>
                 <div class="tips-container">
-        `;
-
-        // Add category-specific tips
-        Object.keys(tips).forEach(category => {
-            resultsHTML += `
-                <div class="tip-category">
-                    <h4>${category.charAt(0).toUpperCase() + category.slice(1)}</h4>
-                    <ul>
-                        ${tips[category].map(tip => `<li>${tip}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-        });
-
-        resultsHTML += `
+                    ${Object.keys(tips).map(category => `
+                        <div class="tip-category">
+                            <h4>${category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+                            <ul>
+                                ${tips[category].map(tip => `<li>${tip}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         `;
 
-        resultsDiv.innerHTML = resultsHTML;
+        // Destroy existing charts if they exist
+        if (pieChart) pieChart.destroy();
+        if (barChart) barChart.destroy();
 
-        // Add CSS classes for animations
-        setTimeout(() => {
-            document.querySelectorAll('.bar').forEach(bar => {
-                bar.classList.add('animate');
-            });
-        }, 100);
+        // Create pie chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Transport', 'Energy', 'Food', 'Other'],
+                datasets: [{
+                    data: [
+                        footprint * 0.4, // Transport
+                        footprint * 0.3, // Energy
+                        footprint * 0.2, // Food
+                        footprint * 0.1  // Other
+                    ],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Carbon Footprint Breakdown'
+                    }
+                }
+            }
+        });
+
+        // Create bar chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Your Footprint', 'Country Average', 'Global Average'],
+                datasets: [{
+                    label: 'Carbon Footprint (kg CO2e)',
+                    data: [footprint, countryAverage, countryAverages.global],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#4BC0C0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Footprint Comparison'
+                    }
+                }
+            }
+        });
     }
 
     function displayError(error) {
@@ -185,6 +236,18 @@ document.addEventListener('DOMContentLoaded', function() {
             <p>${error.message}</p>
         `;
     }
+
+    // Add this after your input elements are created
+    const gasInput = document.getElementById('gas-input');
+    gasInput.title = "Typical US household uses 200-400 ft³ per month";
+
+    // You might also want to add a validation check
+    gasInput.addEventListener('change', function() {
+        const value = parseFloat(this.value);
+        if (value > 1000) {
+            alert('Warning: This seems like a high value for monthly gas usage. Please verify your input is in cubic feet (ft³).');
+        }
+    });
 });
 
 async function calculateFootprint(event) {
