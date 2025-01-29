@@ -51,10 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 country: document.getElementById('country-input').value
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log('Calculated footprint:', data.total);
-            displayResults(data.total);
+            if (data.total !== undefined) {
+                displayResults(data.total);
+            } else {
+                throw new Error('Invalid response format');
+            }
         })
         .catch(error => {
             console.error('Error calculating footprint:', error);
@@ -129,12 +138,15 @@ function sanitizeHTML(str) {
 }
 
 function displayResults(footprint) {
+    if (typeof footprint !== 'number') {
+        console.error('Invalid footprint value:', footprint);
+        displayError(new Error('Invalid calculation result'));
+        return;
+    }
+
     const resultsDiv = document.getElementById('results-output');
-    resultsDiv.classList.remove('hidden');
-    
-    // Get selected country's average
     const selectedCountry = document.getElementById('country-input').value;
-    const countryAverage = countryAverages[selectedCountry];
+    const countryAverage = countryAverages[selectedCountry.toLowerCase()] || countryAverages['global'];
     
     // Calculate individual emissions
     const transport = document.getElementById('transport-input').value;

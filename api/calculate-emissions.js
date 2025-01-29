@@ -17,48 +17,60 @@ const runMiddleware = (req, res, fn) => {
 };
 
 module.exports = async (req, res) => {
-    // Enable CORS
-    await runMiddleware(req, res, corsMiddleware);
-
-    // Only allow POST requests
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
     try {
-        const { commute, transport, electric, gas, meat, flights, country } = req.body;
-        const BASE_URL = 'https://www.carboninterface.com/api/v1';
-        let total = 0;
+        // Enable CORS
+        await runMiddleware(req, res, corsMiddleware);
 
-        // Calculate transport emissions
-        if (commute > 0 && transport !== 'bike') {
-            const yearlyCommute = commute * 365;
-            const transportData = {
-                type: "vehicle",
-                distance_unit: "km",
-                distance_value: yearlyCommute,
-                vehicle_model_id: "some-valid-model-id" // Replace with valid ID
-            };
-            
-            const response = await axios.post(
-                `${BASE_URL}/estimates`,
-                transportData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            total += response.data.data.attributes.carbon_kg;
+        // Only allow POST requests
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        // Calculate other emissions...
-        // (Include your existing calculations for electric, gas, meat, and flights)
+        const { commute, transport, electric, gas, meat, flights, country } = req.body;
+        let total = 0;
 
-        res.status(200).json({ total });
+        // Calculate gas emissions
+        if (gas > 0) {
+            const yearlyGas = gas * 12;
+            total += yearlyGas * 2.3;
+        }
+
+        // Calculate meat emissions
+        if (meat > 0) {
+            const yearlyMeat = meat * 52;
+            total += yearlyMeat * 3.3;
+        }
+
+        // Calculate transport emissions (simplified for testing)
+        if (commute > 0 && transport !== 'bike') {
+            const yearlyCommute = commute * 365;
+            total += yearlyCommute * 0.2; // Simplified calculation
+        }
+
+        // Calculate electricity emissions (simplified)
+        if (electric > 0) {
+            const yearlyElectric = electric * 12;
+            total += yearlyElectric * 0.5; // Simplified calculation
+        }
+
+        // Calculate flight emissions (simplified)
+        if (flights > 0) {
+            const yearlyFlights = flights * 12;
+            total += yearlyFlights * 90; // Simplified calculation
+        }
+
+        // Return the total with proper structure
+        return res.status(200).json({ 
+            success: true,
+            total: total
+        });
+
     } catch (error) {
-        console.error('Server error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Error calculating emissions' });
+        console.error('Server error:', error);
+        return res.status(500).json({ 
+            success: false,
+            error: 'Error calculating emissions',
+            details: error.message
+        });
     }
 };
