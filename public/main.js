@@ -108,6 +108,12 @@ async function calculateFootprint(event) {
     }
 }
 
+function sanitizeHTML(str) {
+    var temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+}
+
 function displayResults(footprint) {
     const resultsDiv = document.getElementById('results-output');
     resultsDiv.classList.remove('hidden');
