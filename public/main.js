@@ -25,6 +25,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitButton = footprintForm.querySelector('button[type="submit"]');
     const resultsDiv = document.getElementById('results-output');
     
+    // Country averages data
+    const countryAverages = {
+        'united states': 16500,
+        'canada': 15500,
+        'united kingdom': 10500,
+        'australia': 17000,
+        'germany': 11000,
+        'france': 9000,
+        'japan': 10500,
+        'global': 12000
+    };
+
+    // Tips based on categories
+    const tips = {
+        transport: [
+            "Consider using public transportation or carpooling",
+            "Switch to an electric or hybrid vehicle",
+            "Maintain your vehicle properly for better efficiency"
+        ],
+        energy: [
+            "Install LED light bulbs",
+            "Use energy-efficient appliances",
+            "Improve home insulation"
+        ],
+        food: [
+            "Reduce meat consumption",
+            "Buy local and seasonal produce",
+            "Minimize food waste"
+        ],
+        general: [
+            "Plant trees or support reforestation projects",
+            "Use renewable energy sources",
+            "Reduce, reuse, and recycle"
+        ]
+    };
+
     submitButton.addEventListener('click', function(event) {
         event.preventDefault();
         
@@ -76,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Function to display results
     function displayResults(footprint) {
         resultsDiv.classList.remove('hidden');
         const selectedCountry = document.getElementById('country-input').value;
@@ -93,14 +128,56 @@ document.addEventListener('DOMContentLoaded', function() {
             comparisonText = `This is ${Math.abs(percentage)}% lower than`;
         }
         
-        resultsDiv.innerHTML = `
+        // Create the results HTML with visualizations and tips
+        let resultsHTML = `
             <h2>Your Carbon Footprint Results</h2>
             <p>Your annual carbon footprint is <strong>${formattedFootprint}</strong> kg CO2e.</p>
             <p>${comparisonText} the average in ${selectedCountry} (${formattedAverage} kg CO2e).</p>
+            
+            <div class="visualization">
+                <h3>Comparison Visualization</h3>
+                <div class="bar-chart">
+                    <div class="bar your-footprint" style="width: ${(footprint/20000)*100}%;">
+                        <span>Your Footprint: ${formattedFootprint}</span>
+                    </div>
+                    <div class="bar country-average" style="width: ${(countryAverage/20000)*100}%;">
+                        <span>Country Average: ${formattedAverage}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recommendations">
+                <h3>Recommended Actions to Reduce Your Footprint</h3>
+                <div class="tips-container">
         `;
+
+        // Add category-specific tips
+        Object.keys(tips).forEach(category => {
+            resultsHTML += `
+                <div class="tip-category">
+                    <h4>${category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+                    <ul>
+                        ${tips[category].map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        });
+
+        resultsHTML += `
+                </div>
+            </div>
+        `;
+
+        resultsDiv.innerHTML = resultsHTML;
+
+        // Add CSS classes for animations
+        setTimeout(() => {
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.classList.add('animate');
+            });
+        }, 100);
     }
 
-    // Function to display errors
     function displayError(error) {
         resultsDiv.classList.remove('hidden');
         resultsDiv.innerHTML = `
