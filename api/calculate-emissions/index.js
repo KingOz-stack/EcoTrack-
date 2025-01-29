@@ -3,6 +3,7 @@ const axios = require('axios');
 
 // Initialize CORS middleware
 const corsMiddleware = cors();
+const BASE_URL = 'https://www.carboninterface.com/api/v1';
 
 // Helper function to wrap middleware
 const runMiddleware = (req, res, fn) => {
@@ -29,45 +30,112 @@ module.exports = async (req, res) => {
         const { commute, transport, electric, gas, meat, flights, country } = req.body;
         let total = 0;
 
-        // Calculate gas emissions
-        if (gas > 0) {
-            const yearlyGas = gas * 12;
-            total += yearlyGas * 0.0551;
+        // Array to hold all API requests
+        const apiRequests = [];
+
+        // 1. Transport emissions calculation
+        if (commute > 0 && transport !== 'bike') {
+            apiRequests.push(
+                axios.post(`${BASE_URL}/estimates`, {
+                    type: "vehicle",
+                    distance_unit: "km",
+                    distance_value: commute * 365,
+                    vehicle_model_id: "7268a9b7-17e8-4c8d-acca-57059252afe9" // Generic car model
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
         }
 
-        // Calculate meat emissions
+        // 2. Electricity emissions calculation
+        if (electric > 0) {
+            apiRequests.push(
+                axios.post(`${BASE_URL}/estimates`, {
+                    type: "electricity",
+                    electricity_unit: "kwh",
+                    electricity_value: electric * 12,
+                    country: country.toLowerCase()
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
+        }
+
+        // 3. Flight emissions calculation
+        if (flights > 0) {
+            apiRequests.push(
+                axios.post(`${BASE_URL}/estimates`, {
+                    type: "flight",
+                    passengers: 1,
+                    legs: [{
+                        departure_airport: "SFO",
+                        destination_airport: "LAX" // Using average domestic flight as baseline
+                    }],
+                    distance_unit: "km"
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
+        }
+
+        // 4. Natural gas emissions calculation
+        if (gas > 0) {
+            apiRequests.push(
+                axios.post(`${BASE_URL}/estimates`, {
+                    type: "fuel_combustion",
+                    fuel_source_type: "ng",
+                    fuel_source_unit: "ft3",
+                    fuel_source_value: gas * 12
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.CARBON_INTERFACE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
+        }
+
+        // Execute all API requests
+        const results = await Promise.all(apiRequests);
+
+        // Sum up all emissions
+        results.forEach(response => {
+            if (response.data && response.data.data.attributes.carbon_kg) {
+                total += response.data.data.attributes.carbon_kg;
+            }
+        });
+
+        // Add meat consumption (using EPA data as API doesn't cover food)
         if (meat > 0) {
             const yearlyMeat = meat * 52;
-            total += yearlyMeat * 3.3;
+            total += yearlyMeat * 2.5; // EPA estimate for meat carbon intensity
         }
 
-        // Calculate transport emissions (simplified for testing)
-        if (commute > 0 && transport !== 'bike') {
-            const yearlyCommute = commute * 365;
-            total += yearlyCommute * 0.2; // Simplified calculation
-        }
-
-        // Calculate electricity emissions (simplified)
-        if (electric > 0) {
-            const yearlyElectric = electric * 12;
-            total += yearlyElectric * 0.5; // Simplified calculation
-        }
-
-        // Calculate flight emissions (simplified)
-        if (flights > 0) {
-            const yearlyFlights = flights * 12;
-            total += yearlyFlights * 90; // Simplified calculation
-        }
-
-        // Return the total with proper structure
-        return res.status(200).json({ 
+        // Return total emissions with breakdown
+        return res.status(200).json({
             success: true,
-            total: total
+            total: total,
+            breakdown: {
+                transport: results[0]?.data.data.attributes.carbon_kg || 0,
+                electricity: results[1]?.data.data.attributes.carbon_kg || 0,
+                flights: results[2]?.data.data.attributes.carbon_kg || 0,
+                gas: results[3]?.data.data.attributes.carbon_kg || 0,
+                food: meat > 0 ? meat * 52 * 2.5 : 0
+            }
         });
 
     } catch (error) {
-        console.error('Server error:', error);
-        return res.status(500).json({ 
+        console.error('Server error:', error.response?.data || error.message);
+        return res.status(500).json({
             success: false,
             error: 'Error calculating emissions',
             details: error.message
