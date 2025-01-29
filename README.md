@@ -1,61 +1,46 @@
-# EcoTrack🌍
+# EcoTrack - Carbon Footprint Calculator
 
-The **EcoTrack** is a simple web application designed to help users calculate their annual carbon footprint based on their transportation habits, dietary preferences, and recycling behavior. It provides actionable recommendations to minimize their environmental impact and visualizes their carbon emissions using customizable charts.
-
----
+EcoTrack is a web application that helps users calculate and understand their carbon footprint. It provides personalized recommendations for reducing environmental impact based on lifestyle choices.
 
 ## Features
 
-1. **Chatbot Interface**:
-   - Engages users with a step-by-step Q&A to collect input on their lifestyle choices.
-   - Supports transportation, dietary habits, and recycling preferences.
+- **Carbon Footprint Calculation**
+  - Transport emissions (daily commute)
+  - Electricity usage
+  - Cooking gas (LPG) consumption
+  - Meat consumption
+  - Flight travel
 
-2. **Dynamic Chart Visualization**:
-   - Displays **bar charts** and **pie charts** for users to view the results of their carbon footprint.
-   - Displays data such as transportation, diet, and recycling contributions to CO2 emissions.
+- **Interactive Visualizations**
+  - Pie chart showing breakdown of emissions
+  - Bar graph comparing user's footprint with country averages
 
-3. **Personalized Recommendations**:
-   - Offers tips to help users reduce their carbon footprint based on their input.
+- **Smart Calculations**
+  - Primary calculation using Carbon Interface API
+  - Fallback to reliable estimates when API is unavailable
+  - Country-specific comparisons
 
-4. **Modern UI Design**:
-   - Includes a customizable logo and a visually appealing background with environmental themes.
+- **Personalized Recommendations**
+  - Category-specific tips for reducing emissions
+  - Actionable insights based on user input
+  - Interactive results display
 
+## Technology Stack
+
+- **Frontend**
+  - HTML5
+  - CSS3 (with modern animations and responsive design)
+  - JavaScript (Vanilla)
+  - Chart.js for visualizations
+
+- **Backend**
+  - Node.js
+  - Express.js
+  - Vercel Serverless Functions
+  - Carbon Interface API integration
+
+## Setup and Installation
 ---
-
-## Technologies Used
-# Eco-Track: Carbon Footprint Calculator
-
-## Overview
-A web-based calculator that helps users estimate their annual carbon footprint based on daily activities, including transportation, energy usage, and dietary choices. The application uses the Carbon Interface API for accurate emissions calculations.
-
-## Features
-- Daily commute emissions calculation
-- Monthly electricity usage tracking
-- Natural gas consumption analysis
-- Dietary impact (meat consumption)
-- Air travel emissions estimation
-- Country-specific electricity emissions
-- Real-time calculations using industry-standard data
-
-## Technologies Used
-### Frontend
-- HTML5
-- CSS3
-- JavaScript
-- Bootstrap (for styling)
-
-### Backend
-- Node.js
-- Express.js
-- Axios (for API requests)
-- dotenv (for environment variables)
-
-### External API
-- Carbon Interface API
-
----
-
-## Setup and Usage
 
 ### 1. Clone the Repository
 ```bash
@@ -63,7 +48,12 @@ git clone https://github.com/your-username/eco-calculator.git
 cd eco-calculator
 ```
 
-### 2. Interact with the Eco Calculator
+### 2. Install dependencies:
+```bash
+npm install
+```
+
+### 3. Interact with the Eco Calculator
 - Answer the chatbot's questions about your lifestyle.
 - View your carbon footprint as a bar chart or pie chart.
 - Get actionable insights to reduce your impact.
@@ -74,25 +64,16 @@ cd eco-calculator
 
 ```
 eco-track/
-│
+├── api/
+│ └── calculate-emissions/
+│ └── index.js # Serverless API function
 ├── public/
-│   ├── index.html
-│   ├── styles.css
-│   ├── script.js
-│   └── assets/
-│       └── images/
-│
-├── server.js
-│
-├── node_modules/
-│
-├── .env
-│
+│ ├── index.html # Main HTML file
+│ ├── main.js # Frontend JavaScript
+│ └── styles.css # Styling
 ├── package.json
-│
-├── package-lock.json
-│
-└── README.md
+└── .gitignore
+
 ```
 
 ---
@@ -123,23 +104,48 @@ The application uses the Carbon Interface API for emissions calculations. Key en
 - Electricity usage
 - Flight emissions
 
+## API Integration
+
+The application uses the Carbon Interface API for precise calculations with a fallback system for reliability:
+
+- Primary: Carbon Interface API calculations
+- Fallback: Built-in emission factors
+  - Transport: 0.2 kg CO2e per km
+  - Electricity: 0.5 kg CO2e per kWh
+  - LPG: 1.5 kg CO2e per liter
+  - Meat: 2.5 kg CO2e per kg
+  - Flights: 90 kg CO2e per flight
+
+## Deployment
+
+The application is deployed on Vercel and can be accessed at [your-deployment-url].
+
+To deploy your own instance:
+
+1. Fork this repository
+2. Connect your fork to Vercel
+3. Add your environment variables in Vercel dashboard
+4. Deploy!
+
 ## Contributing
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/improvement`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/improvement`)
-5. Create a Pull Request
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE.md file for details
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
-- Carbon Interface API for providing emissions data
+
+- Carbon Interface API for emissions data
+- Chart.js for visualization capabilities
+- Vercel for hosting and serverless functions
 
 ## Future Improvements
-- Add more transportation options
-- Include renewable energy options
-- Implement user accounts for tracking progress
-- Add visualization of carbon footprint data
-- Include tips for reducing carbon footprint
-- Add comparison with average footprints by country
+
+- [ ] Add more detailed transport options
+- [ ] Implement user accounts for tracking progress
+- [ ] Add more visualization options
+- [ ] Include more country-specific data
+- [ ] Add offline calculation capabilities
+
